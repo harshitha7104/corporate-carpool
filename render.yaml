@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: corporate-carpool
+    env: node
+    plan: free
+    buildCommand: |
+      cd front-end/carpool && npm install && npm run build
+      cd ../../backend && npm install
+    startCommand: |
+      cd backend && NODE_ENV=production node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
