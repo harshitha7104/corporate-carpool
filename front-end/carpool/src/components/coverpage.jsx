@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./CoverPage.module.css";
+import styles from "./coverpage.module.css";
 import Header from "./Header.jsx";
 import Signup from "./Signup.jsx";
 import ProcessCard from "./Process.jsx";
@@ -36,7 +36,7 @@ const CoverPage = () => {
             <br /> Using Green Way
           </h3>
           <img
-            src="../public/images/sidepic.jpg"
+            src="/images/sidepic.jpg"
             alt="sidepic"
             className={styles.pic}
           />
