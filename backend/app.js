@@ -146,7 +146,7 @@ app.post("/api/Signup",async(req,res)=>{
     const password=String(pwd);
     const normalizedEmail=String(email).trim().toLowerCase();
     if (!/^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/.test(username) ||
-        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/.test(password) ||
+        password.length < 6 || password.length > 64 ||
         !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(normalizedEmail)) {
       return res.status(400).json({ message: "Please provide valid signup details" });
     }
