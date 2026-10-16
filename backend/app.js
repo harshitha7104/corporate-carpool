@@ -6,6 +6,12 @@ const cors=require("cors");
 const crypto=require("crypto");
 const {promisify}=require("util");
 
+try {
+  process.loadEnvFile(path.join(__dirname,".env"));
+} catch {
+  // No .env file; rely on real environment variables.
+}
+
 const scrypt=promisify(crypto.scrypt);
 
 const allowedOrigins=[
@@ -24,7 +30,7 @@ const Ride=require("./models/ride");
 const app=express();
 const PORT=process.env.PORT || 4000;
 const isProduction=process.env.NODE_ENV === "production";
-const mongoUri=process.env.MONGO_URI || (isProduction ? null : "mongodb://127.0.0.1:27017/user");
+let mongoUri=process.env.MONGO_URI || (isProduction ? null : "local");
 const authSecret=process.env.AUTH_SECRET || (isProduction ? null : "local-development-only-secret");
 
 if (!mongoUri || !authSecret) {
@@ -414,6 +420,29 @@ app.use((err,req,res,next)=>{
   return res.status(500).json({ message: "Something went wrong" });
 });
 
+// Without MONGO_URI in development, use a MongoDB on this machine if one is
+// running, otherwise start a built-in one that keeps its data in backend/.data.
+const resolveMongoUri=async()=>{
+  if (mongoUri !== "local") {
+    return mongoUri;
+  }
+  const localUri="mongodb://127.0.0.1:27017/carpool";
+  try {
+    const probe=await mongoose.createConnection(localUri,{ serverSelectionTimeoutMS:1500 }).asPromise();
+    await probe.close();
+    mongoUri=localUri;
+  } catch {
+    const { MongoMemoryServer }=require("mongodb-memory-server");
+    const dbPath=path.join(__dirname,".data","db");
+    fs.mkdirSync(dbPath,{ recursive:true });
+    console.log("No MongoDB found locally; starting built-in database (first run downloads it, please wait)...");
+    const server=await MongoMemoryServer.create({ instance:{ dbPath,storageEngine:"wiredTiger" } });
+    mongoUri=server.getUri("carpool");
+    console.log(`Built-in database ready (data saved in ${dbPath})`);
+  }
+  return mongoUri;
+};
+
 let connectionAttempt;
 let databaseErrorReported=false;
 const connectDatabase=()=>{
@@ -421,7 +450,8 @@ const connectDatabase=()=>{
     return connectionAttempt;
   }
 
-  connectionAttempt=mongoose.connect(mongoUri,{ serverSelectionTimeoutMS:5000 })
+  connectionAttempt=resolveMongoUri()
+    .then((uri)=>mongoose.connect(uri,{ serverSelectionTimeoutMS:5000 }))
     .then(()=>{
       databaseErrorReported=false;
       console.log("Connected to MongoDB");
