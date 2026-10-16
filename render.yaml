@@ -1,13 +1,15 @@
 services:
   - type: web
     name: corporate-carpool
-    env: node
+    runtime: node
     plan: free
-    buildCommand: |
-      cd front-end/carpool && npm install && npm run build
-      cd ../../backend && npm install
-    startCommand: |
-      cd backend && NODE_ENV=production node app.js
+    buildCommand: npm --prefix front-end/carpool ci --include=dev && npm --prefix front-end/carpool run build && npm --prefix backend ci --omit=dev
+    startCommand: npm --prefix backend start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: MONGO_URI
+        sync: false
+      - key: AUTH_SECRET
+        sync: false

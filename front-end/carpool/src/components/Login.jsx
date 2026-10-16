@@ -1,8 +1,29 @@
 import styles from "./Login.module.css";
 import { User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import axios from "../api/axios";
+import { saveSession } from "../api/auth";
+
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
+  const [error,setError]=useState("");
+
+  const handleSubmit=async(event)=>{
+    event.preventDefault();
+    setError("");
+    try {
+      const response=await axios.post("/Login",{email,pwd:password});
+      saveSession(response.data.token,response.data.user);
+      navigate(location.state?.from || "/form");
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to sign in. Please try again.");
+    }
+  };
+
   return (
     <>
       <div className={styles.container}>
@@ -15,7 +36,8 @@ const Login = () => {
             <p>Please Login in to continue</p>
           </div>
           <div className={styles.cardbody}>
-            <form>
+            <form onSubmit={handleSubmit}>
+              {error && <p className={styles.errorMessage} role="alert">{error}</p>}
               <div className={styles.formgroup}>
                 <label htmlFor="email" className={styles.formlabel}>
                   Email Address
@@ -25,6 +47,10 @@ const Login = () => {
                   id="email"
                   className={styles.forminput}
                   placeholder="your@email.com"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event)=>setEmail(event.target.value)}
+                  required
                 />
               </div>
               <div className={styles.formgroup}>
@@ -36,17 +62,20 @@ const Login = () => {
                   id="password"
                   className={styles.forminput}
                   placeholder="Enter your password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event)=>setPassword(event.target.value)}
+                  required
                 />
               </div>
               <button
                 type="submit"
-                onClick={() => navigate("/")}
                 className={styles.btn}
               >
                 Sign In
               </button>
               <div className={styles.link}>
-                Already have an account? <Link to="/Signup">Sign Up</Link>
+                Need an account? <Link to="/Signup">Sign Up</Link>
               </div>
             </form>
           </div>

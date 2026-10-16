@@ -3,6 +3,7 @@ const userSchema=new mongoose.Schema({
   Username:{
     type:String,
     required:true,
+    unique:true,
   },
   Password:{
     type:String,
@@ -12,24 +13,6 @@ const userSchema=new mongoose.Schema({
     type:String,
     required:true,
     unique:true,
-  },
-    location:{
-    type:String,
-  },
-  destination:{
-    type:String,
-  },
-  carNumber:{
-    type:String,
-  },
-  carcapacity:{
-    type:String,
-  },
-  availableseats:{
-    type:String,
-  },
-  conditions:{
-    type:String,
   },
 },
 {});

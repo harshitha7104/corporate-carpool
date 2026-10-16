@@ -225,6 +225,14 @@
   animation: slideDown 0.3s ease;
 }
 
+.errorMessage {
+  color: var(--error-color);
+  background: #fff1f0;
+  border-left: 4px solid var(--error-color);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }

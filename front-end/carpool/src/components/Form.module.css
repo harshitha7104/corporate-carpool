@@ -237,6 +237,87 @@ body {
   transform: translateY(0);
 }
 
+.btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.searchMessage {
+  margin: 18px 0 0;
+  color: #b42318;
+  text-align: center;
+}
+
+.results {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.results h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ride {
+  padding: 16px;
+  border: 1px solid #d7e3d7;
+  border-radius: 8px;
+  background: #f5f8f4;
+}
+
+.ride h4,
+.ride p {
+  margin: 0 0 6px;
+}
+
+.ride p:last-child {
+  margin-bottom: 0;
+}
+
+.notice {
+  position: relative;
+  z-index: 1;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #e5f3e5;
+  color: #22592b;
+}
+
+.bookBtn,
+.cancelBtn {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bookBtn {
+  background: #2f7d3b;
+  color: #fff;
+}
+
+.cancelBtn {
+  background: #f1dede;
+  color: #8a2a2a;
+}
+
+.bookBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ownRide {
+  font-style: italic;
+  color: #5b6b5b;
+}
+
 @media (max-width: 768px) {
   .card {
     max-width: 100%;

@@ -1,9 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { Check, X, Info, AlertCircle } from "lucide-react";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Signup.module.css";
 import axios from "../api/axios";
-import { useNavigate } from "react-router-dom";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
@@ -66,7 +65,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post(
+      await axios.post(
         REGISTER_URL,
         JSON.stringify({ user, pwd, email }),
         {
@@ -74,25 +73,19 @@ const Signup = () => {
           withCredentials: true,
         }
       );
-      console.log(response?.data);
-      console.log(response?.accessToken);
-      console.log(JSON.stringify(response));
-      console.log("Registration successful", { user, email });
       setSuccess(true);
       setUser("");
       setPwd("");
       setEmail("");
     } catch (err) {
-      setErrMsg("Registration Failed");
       errRef.current?.focus();
       if (!err?.response) {
         setErrMsg("No Server Response");
       } else if (err.response?.status === 409) {
-        setErrMsg("Username Taken");
+        setErrMsg("That username or email is already registered");
       } else {
-        setErrMsg("Registration Failed");
+        setErrMsg(err.response?.data?.message || "Registration Failed");
       }
-      console.log(err.response?.data);
     }
   };
 

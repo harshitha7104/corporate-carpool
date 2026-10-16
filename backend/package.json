@@ -2,16 +2,20 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "mongoose": "^8.15.0",
-    "node.js": "^0.0.1-security",
-    "nodemon": "^3.1.10",
-    "react": "^19.1.0"
+    "mongoose": "^8.15.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   },
   "name": "backend",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "author": "",
   "license": "ISC",
