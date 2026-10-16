@@ -42,7 +42,8 @@ const Contact = () => {
             <p>
               © 2025 Green Way — Making every commute greener, one shared ride
               at a time. Questions? Contact our support team at
-              lakshminarasimh44@gamil.com or call +91 9849111050 during business
+              <a href="mailto:harshitha71004@gmail.com">harshitha71004@gmail.com</a> or
+              call <a href="tel:+918867476254">+91 8867476254</a> during business
               hours.
             </p>
           </div>
