@@ -42,8 +42,8 @@ const Contact = () => {
             <p>
               © 2025 Green Way — Making every commute greener, one shared ride
               at a time. Questions? Contact our support team at
-              <a href="mailto:harshitha71004@gmail.com">harshitha71004@gmail.com</a> or
-              call <a href="tel:+918867476254">+91 8867476254</a> during business
+              {" "}<a style={{ color: "inherit" }} href="mailto:harshitha71004@gmail.com">harshitha71004@gmail.com</a> or
+              call <a style={{ color: "inherit" }} href="tel:+918867476254">+91 8867476254</a> during business
               hours.
             </p>
           </div>

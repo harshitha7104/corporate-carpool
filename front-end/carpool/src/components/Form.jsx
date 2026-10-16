@@ -117,7 +117,7 @@ const Form = () => {
             </div>
 
             <button type="submit" className={styles.btn} disabled={loading}>
-              {loading ? "Searching..." : "Find Rides"}
+              {loading ? "Searching..." : "Let's Go"}
             </button>
           </form>
           {error && <p className={styles.searchMessage} role="alert">{error}</p>}

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { getToken } from "../api/auth";
 import { formatDeparture } from "../api/format";
+import Header from "./Header.jsx";
 import styles from "./MyRides.module.css";
 
 const RideDetails = ({ ride }) => (
@@ -65,6 +66,8 @@ const MyRides = () => {
     act(ride.id, () => axios.delete(`/Rides/${ride.id}/book`));
 
   return (
+    <>
+    <Header />
     <main className={styles.page}>
       <h1>My Rides</h1>
       {error && <p className={styles.error} role="alert">{error}</p>}
@@ -123,6 +126,7 @@ const MyRides = () => {
         </div>
       )}
     </main>
+    </>
   );
 };
 
