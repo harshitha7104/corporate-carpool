@@ -44,7 +44,8 @@ const corsOptions=(req,callback)=>{
   const origin=req.header("Origin");
   const sameOrigin=origin === `${req.protocol}://${req.get("host")}` ||
     origin === `https://${req.get("host")}`;
-  if (!origin || sameOrigin || allowedOrigins.includes(origin)) {
+  const localDev=!isProduction && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || "");
+  if (!origin || sameOrigin || localDev || allowedOrigins.includes(origin)) {
     callback(null,{ origin:true,credentials:true,optionsSuccessStatus:200 });
   } else {
     callback(new Error("Not allowed by CORS"));
