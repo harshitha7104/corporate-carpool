@@ -1,24 +1,30 @@
 {
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "mongoose": "^8.15.0"
-  },
-  "devDependencies": {
-    "mongodb-memory-server": "^10.4.3",
-    "nodemon": "^3.1.10"
-  },
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "app.js",
+  "name": "greenway-backend",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node src/server.js",
+    "dev": "node --watch-path=src src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "lint": "node scripts/lint.js",
+    "db:reset": "node scripts/resetDevDb.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.0",
+    "ws": "^8.18.2",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "embedded-postgres": "17.5.0-beta.15"
+  },
+  "license": "UNLICENSED",
+  "description": "Green Way carpooling API, worker and realtime service"
 }
