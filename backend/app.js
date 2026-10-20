@@ -26,6 +26,7 @@ const allowedOrigins=[
 
 const User=require("./models/user");
 const Ride=require("./models/ride");
+const { buildDemoRides }=require("./demoData");
 
 const app=express();
 const PORT=process.env.PORT || 4000;
@@ -37,19 +38,20 @@ if (!mongoUri || !authSecret) {
   throw new Error("MONGO_URI and AUTH_SECRET must be configured in production");
 }
 
-const corsOptions={
-  origin:(origin,callback)=>{
-    if(allowedOrigins.includes(origin)||!origin){
-      callback(null,true);
-    }else{
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials:true,
-  optionSuccessStatus:200,
+// Requests from the site itself (same host) are always allowed; other origins
+// must be listed. Static files are not cross-origin checked at all.
+const corsOptions=(req,callback)=>{
+  const origin=req.header("Origin");
+  const sameOrigin=origin === `${req.protocol}://${req.get("host")}` ||
+    origin === `https://${req.get("host")}`;
+  if (!origin || sameOrigin || allowedOrigins.includes(origin)) {
+    callback(null,{ origin:true,credentials:true,optionsSuccessStatus:200 });
+  } else {
+    callback(new Error("Not allowed by CORS"));
+  }
 };
 
-app.use(cors(corsOptions));
+app.use("/api",cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 app.use("/api",(req,res,next)=>{
   if (mongoose.connection.readyState !== 1) {
@@ -201,7 +203,7 @@ app.post("/api/Login",async(req,res)=>{
   }
 });
 
-const RIDE_FIELDS="driverName location destination departureTime carNumber carType totalSeats availableSeats conditions createdAt";
+const RIDE_FIELDS="driverName location destination departureTime carNumber carType carColor totalSeats availableSeats pricePerSeat driverRating driverTrips isDemo conditions createdAt";
 
 const toRide=(ride,userId)=>({
   id:ride._id,
@@ -214,6 +216,11 @@ const toRide=(ride,userId)=>({
   totalSeats:ride.totalSeats,
   availableSeats:ride.availableSeats,
   conditions:ride.conditions,
+  carColor:ride.carColor,
+  pricePerSeat:ride.pricePerSeat,
+  driverRating:ride.driverRating,
+  driverTrips:ride.driverTrips,
+  isDemo:Boolean(ride.isDemo),
   isDriver:userId ? String(ride.driver) === String(userId) : false,
   isBooked:userId ? (ride.passengers || []).some((id)=>String(id) === String(userId)) : false,
 });
@@ -239,7 +246,10 @@ app.post("/api/Rides",requireAuth,async(req,res)=>{
       totalSeats,
       availableSeats,
       conditions,
+      carColor,
+      pricePerSeat,
     }=req.body;
+    const price=pricePerSeat === undefined || pricePerSeat === "" ? undefined : Number(pricePerSeat);
     const total=Number(totalSeats);
     const available=Number(availableSeats);
     const departure=departureTime ? new Date(departureTime) : undefined;
@@ -247,7 +257,8 @@ app.post("/api/Rides",requireAuth,async(req,res)=>{
     if (!text(location) || !text(destination) || !text(carNumber) || !text(carType) ||
         !Number.isInteger(total) || !Number.isInteger(available) ||
         total < 1 || total > 10 || available < 1 || available > total ||
-        (departure && Number.isNaN(departure.getTime()))) {
+        (departure && Number.isNaN(departure.getTime())) ||
+        (price !== undefined && (!Number.isFinite(price) || price < 0 || price > 10000))) {
       return res.status(400).json({ message: "Please provide valid ride details" });
     }
 
@@ -264,6 +275,8 @@ app.post("/api/Rides",requireAuth,async(req,res)=>{
       totalSeats:total,
       availableSeats:available,
       conditions:text(conditions).slice(0,500),
+      carColor:text(carColor).slice(0,30),
+      pricePerSeat:price,
     });
     return res.status(201).json({ message: "Ride offered", ride:toRide(ride,user._id) });
   } catch (err) {
@@ -443,6 +456,24 @@ const resolveMongoUri=async()=>{
   return mongoUri;
 };
 
+// Fill an empty ride board with demo rides (always in development; in
+// production only when SEED_DEMO=true).
+const seedDemoRides=async()=>{
+  if (isProduction && process.env.SEED_DEMO !== "true") return;
+  if (await Ride.exists({})) return;
+  let demoDriver=await User.findOne({ Username:"greenway_demo" });
+  if (!demoDriver) {
+    demoDriver=await User.create({
+      Username:"greenway_demo",
+      Email:"demo@greenway.invalid",
+      Password:await hashPassword(crypto.randomBytes(24).toString("hex")),
+    });
+  }
+  const rides=buildDemoRides().map((ride)=>({ ...ride,driver:demoDriver._id }));
+  await Ride.insertMany(rides);
+  console.log(`Added ${rides.length} demo rides`);
+};
+
 let connectionAttempt;
 let databaseErrorReported=false;
 const connectDatabase=()=>{
@@ -455,6 +486,7 @@ const connectDatabase=()=>{
     .then(()=>{
       databaseErrorReported=false;
       console.log("Connected to MongoDB");
+      seedDemoRides().catch((err)=>console.error("Adding demo rides failed:",err.message));
     })
     .catch((err)=>{
       if (!databaseErrorReported) {

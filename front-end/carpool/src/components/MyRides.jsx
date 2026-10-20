@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { getToken } from "../api/auth";
-import { formatDeparture } from "../api/format";
+import { formatDeparture, formatPrice } from "../api/format";
 import Header from "./Header.jsx";
 import styles from "./MyRides.module.css";
 
@@ -10,7 +10,8 @@ const RideDetails = ({ ride }) => (
   <>
     <h4>{ride.location} to {ride.destination}</h4>
     {ride.departureTime && <p>Departs: {formatDeparture(ride.departureTime)}</p>}
-    <p>{ride.carType} · {ride.carNumber}</p>
+    <p>{[ride.carColor, ride.carType].filter(Boolean).join(" ")} · {ride.carNumber}</p>
+    {ride.pricePerSeat != null && <p>{formatPrice(ride.pricePerSeat)} per seat</p>}
     <p>{ride.availableSeats} of {ride.totalSeats} seats available</p>
   </>
 );

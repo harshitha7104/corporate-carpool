@@ -47,6 +47,27 @@ const rideSchema=new mongoose.Schema({
     type:String,
     trim:true,
   },
+  carColor:{
+    type:String,
+    trim:true,
+  },
+  pricePerSeat:{
+    type:Number,
+    min:0,
+  },
+  driverRating:{
+    type:Number,
+  },
+  driverTrips:{
+    type:Number,
+  },
+  isDemo:{
+    type:Boolean,
+    default:false,
+  },
+  demoKey:{
+    type:String,
+  },
   passengers:[{
     type:mongoose.Schema.Types.ObjectId,
     ref:"User",

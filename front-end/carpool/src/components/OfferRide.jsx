@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./OfferRide.module.css";
-import { Car, MapPin, CheckCircle, Users, MessageSquare, Clock } from "lucide-react";
+import { Car, MapPin, CheckCircle, Users, MessageSquare, Clock, IndianRupee } from "lucide-react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../api/auth";
@@ -35,6 +35,8 @@ const OfferRide = () => {
       departureTime: departure ? new Date(departure).toISOString() : undefined,
       carNumber: formData.get("carnumber"),
       carType: formData.get("cartype"),
+      carColor: formData.get("carcolor"),
+      pricePerSeat: formData.get("price"),
       totalSeats: formData.get("Totalseats"),
       availableSeats: formData.get("Availableseats"),
       conditions: formData.get("exampleFormControlTextarea1"),
@@ -159,6 +161,43 @@ const OfferRide = () => {
                   name="cartype"
                   placeholder="Enter your car model or company"
                   required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formgroup}>
+              <label htmlFor="carcolor" className={styles.label}>
+                Car colour (optional):
+              </label>
+              <div className={styles.inputWrapper}>
+                <Car size={18} className={styles.inputIcon} />
+                <input
+                  type="text"
+                  className={styles.input}
+                  id="carcolor"
+                  name="carcolor"
+                  placeholder="e.g. White"
+                  maxLength="30"
+                />
+              </div>
+            </div>
+
+            <div className={styles.formgroup}>
+              <label htmlFor="price" className={styles.label}>
+                Price per seat in ₹ (optional):
+              </label>
+              <div className={styles.inputWrapper}>
+                <IndianRupee size={18} className={styles.inputIcon} />
+                <input
+                  type="number"
+                  className={styles.input}
+                  id="price"
+                  name="price"
+                  placeholder="e.g. 120"
+                  min="0"
+                  max="10000"
                 />
               </div>
             </div>

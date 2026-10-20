@@ -277,6 +277,48 @@ body {
   margin-bottom: 0;
 }
 
+.rideTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.rideTop h4 {
+  min-width: 0;
+}
+
+.price {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2f7d3b;
+}
+
+.price small {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5b6b5b;
+}
+
+.rating {
+  color: #8a6d1f;
+  font-weight: 600;
+}
+
+.demoTag {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e6ebf5;
+  color: #44507a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .notice {
   position: relative;
   z-index: 1;

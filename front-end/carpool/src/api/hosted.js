@@ -117,6 +117,11 @@ const toRide = (snap, uid) => {
     totalSeats: ride.totalSeats,
     availableSeats: ride.availableSeats,
     conditions: ride.conditions,
+    carColor: ride.carColor || "",
+    pricePerSeat: ride.pricePerSeat ?? null,
+    driverRating: ride.driverRating ?? null,
+    driverTrips: ride.driverTrips ?? null,
+    isDemo: Boolean(ride.isDemo),
     isDriver: ride.driverUid === uid,
     isBooked: (ride.passengers || []).some((p) => p.uid === uid),
   };
@@ -192,10 +197,12 @@ const routes = {
     const total = Number(body.totalSeats);
     const available = Number(body.availableSeats);
     const departure = body.departureTime ? new Date(body.departureTime) : null;
+    const price = body.pricePerSeat === undefined || body.pricePerSeat === null || body.pricePerSeat === "" ? null : Number(body.pricePerSeat);
     if (!text(body.location, 120) || !text(body.destination, 120) || !text(body.carNumber, 20) || !text(body.carType, 60) ||
         !Number.isInteger(total) || !Number.isInteger(available) ||
         total < 1 || total > 10 || available < 1 || available > total ||
-        (departure && Number.isNaN(departure.getTime()))) {
+        (departure && Number.isNaN(departure.getTime())) ||
+        (price !== null && (!Number.isFinite(price) || price < 0 || price > 10000))) {
       throw fail(400, "Please provide valid ride details");
     }
     const ref = db.collection("rides").doc();
@@ -210,6 +217,8 @@ const routes = {
       totalSeats: total,
       availableSeats: available,
       conditions: text(body.conditions, 500),
+      carColor: text(body.carColor, 30),
+      pricePerSeat: price,
       passengers: [],
       createdAt: new Date().toISOString(),
     }));

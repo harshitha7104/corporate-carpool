@@ -111,3 +111,7 @@ This project is for educational/demo use.
 ## Hosted on claude.ai (no server needed)
 
 `npm --prefix front-end/carpool run build:hosted` builds a version of the same frontend that runs as a claude.ai artifact. Instead of the Express API it uses the artifact's built-in shared database (`src/api/hosted.js`), so it needs no MongoDB or Render account. Each person's login is tied to their claude.ai account, and people need at least Contributor access on the artifact to sign up, offer, or book rides.
+
+## Demo rides
+
+`backend/demoData.js` holds 18 sample rides on Bangalore office-commute routes, with prices per seat, driver ratings and weekday departure times in India time. When the ride board is empty, the backend adds them automatically in development, and on Render because `render.yaml` sets `SEED_DEMO=true` (remove that to start with an empty board). Demo rides show a "Demo" tag and can be booked like real ones.

@@ -5,7 +5,7 @@ import { Navigation } from "lucide-react";
 import styles from "./Form.module.css";
 import axios from "../api/axios";
 import { getToken } from "../api/auth";
-import { formatDeparture } from "../api/format";
+import { formatDeparture, formatPrice } from "../api/format";
 
 const Form = () => {
   const [from,setFrom]=useState("");
@@ -127,10 +127,21 @@ const Form = () => {
               <h3>{rides.length ? `${rides.length} ride${rides.length === 1 ? "" : "s"} available` : "No rides found"}</h3>
               {rides.map((ride)=>(
                 <article className={styles.ride} key={ride.id}>
-                  <h4>{ride.location} to {ride.destination}</h4>
-                  <p>Driver: {ride.driverName}</p>
+                  <div className={styles.rideTop}>
+                    <h4>{ride.location} to {ride.destination}</h4>
+                    {ride.pricePerSeat != null && (
+                      <span className={styles.price}>{formatPrice(ride.pricePerSeat)}<small>/seat</small></span>
+                    )}
+                  </div>
+                  <p>
+                    Driver: {ride.driverName}
+                    {ride.driverRating != null && (
+                      <span className={styles.rating}> ★ {ride.driverRating.toFixed(1)} · {ride.driverTrips} trips</span>
+                    )}
+                    {ride.isDemo && <span className={styles.demoTag}>Demo</span>}
+                  </p>
                   {ride.departureTime && <p>Departs: {formatDeparture(ride.departureTime)}</p>}
-                  <p>{ride.carType} · {ride.carNumber}</p>
+                  <p>{[ride.carColor, ride.carType].filter(Boolean).join(" ")} · {ride.carNumber}</p>
                   <p>{ride.availableSeats} of {ride.totalSeats} seats available</p>
                   {ride.conditions && <p>{ride.conditions}</p>}
                   {ride.isDriver ? (

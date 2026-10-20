@@ -3,3 +3,5 @@ export const formatDeparture = (value) =>
     dateStyle: "medium",
     timeStyle: "short",
   });
+
+export const formatPrice = (value) => `₹${Math.round(Number(value))}`;
