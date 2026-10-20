@@ -9,7 +9,7 @@ const ProcessCard = () => {
         <div className={styles.sidepic}>
           <h3>Find the Ride</h3>
           <img
-            src="/images/secondpage.jpg"
+            src={`${import.meta.env.BASE_URL}images/secondpage.jpg`}
             alt="sidepic"
             className={styles.pic}
           />

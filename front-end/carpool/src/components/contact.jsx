@@ -14,27 +14,27 @@ const Contact = () => {
             <h1>Stay Connected</h1>
             <div className={styles.social}>
               <div className={styles.subsocial}>
-                <a href="/">
+                <a href="#">
                   <FaFacebook />
                 </a>
               </div>
               <div className={styles.subsocial}>
-                <a href="/" style={{ color: "#F75A5A" }}>
+                <a href="#" style={{ color: "#F75A5A" }}>
                   <FaInstagram />
                 </a>
               </div>
               <div className={styles.subsocial}>
-                <a href="/" style={{ color: "gray" }}>
+                <a href="#" style={{ color: "gray" }}>
                   <FaTwitter />
                 </a>
               </div>
               <div className={styles.subsocial}>
-                <a href="/">
+                <a href="#">
                   <FaXTwitter />
                 </a>
               </div>
               <div className={styles.subsocial}>
-                <a href="/" style={{ color: "red" }}>
+                <a href="#" style={{ color: "red" }}>
                   <IoLogoYoutube />
                 </a>
               </div>
@@ -48,7 +48,7 @@ const Contact = () => {
             </p>
           </div>
           <img
-            src="/images/footer.jpg"
+            src={`${import.meta.env.BASE_URL}images/footer.jpg`}
             alt="ecofriendly"
             className={styles.footer}
           />
@@ -56,13 +56,13 @@ const Contact = () => {
         <footer className="d-flex flex-wrap justify-content-between align-items-center py-3 my-3 border-top">
           {" "}
           <a
-            href="/"
+            href="#"
             className="col-md-3 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
             aria-label="Bootstrap"
           >
             {" "}
             <img
-              src="/images/logo.jpg"
+              src={`${import.meta.env.BASE_URL}images/logo.jpg`}
               alt="logo"
               className={styles.logo}
             />

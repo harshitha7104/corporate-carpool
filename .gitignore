@@ -18,3 +18,4 @@ Thumbs.db
 
 # Local built-in database files
 backend/.data/
+front-end/carpool/dist-hosted/

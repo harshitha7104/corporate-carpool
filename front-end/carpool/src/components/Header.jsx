@@ -20,7 +20,7 @@ const Header = () => {
         <div className={`container-fluid  ${styles.title}`}>
           <Link className="navbar-brand " to="/">
             <img
-              src="/images/logo.jpg"
+              src={`${import.meta.env.BASE_URL}images/logo.jpg`}
               alt="logo"
               className="logo-icon "
             />

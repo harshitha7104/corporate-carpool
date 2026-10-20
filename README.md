@@ -107,3 +107,7 @@ https://github.com/harshitha7104/corporate-carpool
 ## License
 
 This project is for educational/demo use.
+
+## Hosted on claude.ai (no server needed)
+
+`npm --prefix front-end/carpool run build:hosted` builds a version of the same frontend that runs as a claude.ai artifact. Instead of the Express API it uses the artifact's built-in shared database (`src/api/hosted.js`), so it needs no MongoDB or Render account. Each person's login is tied to their claude.ai account, and people need at least Contributor access on the artifact to sign up, offer, or book rides.

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { clearSession, getToken } from "./auth";
+import hostedClient from "./hosted";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
@@ -23,4 +24,5 @@ apiClient.interceptors.response.use(
   }
 );
 
-export default apiClient;
+// The claude.ai-hosted build (`npm run build:hosted`) has no Express server.
+export default import.meta.env.MODE === "hosted" ? hostedClient : apiClient;

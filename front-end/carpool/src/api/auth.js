@@ -4,11 +4,29 @@ const TOKEN_KEY = "authToken";
 const USER_KEY = "authUser";
 const listeners = new Set();
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
+// Storage can be unavailable (private windows, blocked site data).
+const read = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const store = (key, value) => {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    // Session lasts only for this page load.
+  }
+};
+
+export const getToken = () => read(TOKEN_KEY);
 
 export const getUser = () => {
   try {
-    return JSON.parse(localStorage.getItem(USER_KEY));
+    return JSON.parse(read(USER_KEY));
   } catch {
     return null;
   }
@@ -17,14 +35,14 @@ export const getUser = () => {
 const notify = () => listeners.forEach((listener) => listener(getUser()));
 
 export const saveSession = (token, user) => {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  store(TOKEN_KEY, token);
+  store(USER_KEY, JSON.stringify(user));
   notify();
 };
 
 export const clearSession = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  store(TOKEN_KEY, null);
+  store(USER_KEY, null);
   notify();
 };
 

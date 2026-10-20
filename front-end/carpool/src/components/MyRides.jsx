@@ -56,10 +56,15 @@ const MyRides = () => {
     }
   };
 
+  const [confirming, setConfirming] = useState(null);
+
   const removeRide = (ride) => {
-    if (window.confirm(`Remove your ride from ${ride.location} to ${ride.destination}?`)) {
-      act(ride.id, () => axios.delete(`/Rides/${ride.id}`));
+    if (confirming !== ride.id) {
+      setConfirming(ride.id);
+      return;
     }
+    setConfirming(null);
+    act(ride.id, () => axios.delete(`/Rides/${ride.id}`));
   };
 
   const cancelBooking = (ride) =>
@@ -96,8 +101,13 @@ const MyRides = () => {
                   disabled={busy === ride.id}
                   onClick={() => removeRide(ride)}
                 >
-                  Remove ride
+                  {confirming === ride.id ? "Click again to remove" : "Remove ride"}
                 </button>
+                {confirming === ride.id && (
+                  <button type="button" className={styles.secondary} onClick={() => setConfirming(null)}>
+                    Keep ride
+                  </button>
+                )}
               </article>
             ))}
           </section>

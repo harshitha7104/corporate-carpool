@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import Form from "./components/Form.jsx";
 import Login from "./components/Login.jsx";
 import App from "./App.jsx";
@@ -11,7 +11,10 @@ import Signup from "./components/Signup.jsx";
 import Confirm from "./components/confirm.jsx";
 import MyRides from "./components/MyRides.jsx";
 
-const router = createBrowserRouter([
+// The claude.ai-hosted page cannot change its own URL path.
+const createRouter = import.meta.env.MODE === "hosted" ? createMemoryRouter : createBrowserRouter;
+
+const router = createRouter([
   {
     path: "/",
     element: <App />,

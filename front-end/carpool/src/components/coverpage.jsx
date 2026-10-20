@@ -37,7 +37,7 @@ const CoverPage = () => {
             <br /> Using Green Way
           </h3>
           <img
-            src="/images/sidepic.jpg"
+            src={`${import.meta.env.BASE_URL}images/sidepic.jpg`}
             alt="sidepic"
             className={styles.pic}
           />
