@@ -1,117 +1,75 @@
-# Corporate Carpool
+# Green Way
 
-A carpooling web application built with React, Vite, Express, and MongoDB.
+Carpooling for Bengaluru. Drivers publish trips they're already making; passengers going the same way book a seat and share the running cost. The app covers passengers, drivers, admins and support operators: OTP sign-in, document verification, route matching, request-to-book and instant booking, payments, live trips, safety tools, recurring commutes and an admin console.
 
-## Features
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, React Hook Form + Zod, Leaflet (`front-end/carpool`)
+- **Backend:** Node.js 22+, Express 5, PostgreSQL, Zod, WebSockets, an in-process worker (`backend`)
+- **Docs:** `docs/` (requirements, architecture, database, API, metrics, security, testing, deployment, verification matrix)
 
-- Account registration and sign-in
-- Passwords hashed before storage
-- Authenticated ride offers (drivers can offer multiple rides, with optional departure time)
-- Browse and search available rides by starting point and destination
-- Book a seat on a ride, or cancel a booking (seat counts update atomically; full rides are hidden)
-- "My Rides" page: rides you offer (with passenger list, removable) and seats you've booked
+## Run it locally
 
-## API
+You need Node.js 22.12 or newer. You don't need PostgreSQL or Docker: in development the backend starts a real embedded PostgreSQL server (downloaded on first run) and fills it with fictional demo data.
 
-| Method | Path | Auth | Purpose |
-| --- | --- | --- | --- |
-| POST | `/api/Signup` | – | Create account `{ user, pwd, email }` |
-| POST | `/api/Login` | – | Sign in `{ email, pwd }` → `{ token, user }` |
-| GET | `/api/Rides?from=&to=` | optional | List/search rides with free seats |
-| POST | `/api/Rides` | yes | Offer a ride |
-| DELETE | `/api/Rides/:id` | driver | Remove your ride |
-| POST | `/api/Rides/:id/book` | yes | Book a seat |
-| DELETE | `/api/Rides/:id/book` | yes | Cancel your booking |
-| GET | `/api/MyRides` | yes | Rides you offer and rides you booked |
-| GET | `/health` | – | Server + database health |
-
-Authenticated requests send `Authorization: Bearer <token>`.
-- Responsive frontend UI
-- Backend API with MongoDB integration
-
-## Tech Stack
-
-- Frontend: React + Vite
-- Backend: Node.js + Express
-- Database: MongoDB
-- Styling: CSS modules
-
-## Project Structure
+Fastest way (one server, optimised build, http://localhost:4000):
 
 ```bash
-corporate-carpool/
-├── backend/
-│   ├── app.js
-│   ├── package.json
-│   └── models/
-├── front-end/
-│   └── carpool/
-│       ├── package.json
-│       ├── vite.config.js
-│       └── src/
-├── README.md
-└── .gitignore
+npm run setup   # once: installs backend and frontend packages
+npm start       # builds the web app, then starts the API serving it
 ```
 
-## Local Development
+For working on the code with instant reload, use two terminals instead: `npm run dev:api` (API on :4000) and `npm run dev:web` (web app on http://localhost:5173).
 
-### 1) Start the backend
+Open the app and sign in with any demo number below. In development the sign-in code appears on screen; nothing is texted.
+
+| Role | Number | Name |
+| --- | --- | --- |
+| Admin | 99000 00001 | Asha Rao |
+| Support operator | 99000 00002 | Ravi Kumar |
+| Drivers (verified) | 99000 00101 – 99000 00108 | Arjun, Priya, Rahul, Sneha, Vikram, Ananya, Karthik, Meera |
+| Driver awaiting review | 99000 00109 | Rohan Das |
+| Passengers | 99000 00201 – 99000 00203 | Divya, Aditya, Kavya |
+
+Any other Indian mobile number creates a new account. All demo people, cars, rides and reviews are fictional and tagged "Demo" in the app. Seed accounts exist only when the database is seeded; never seed production.
+
+Useful commands (in `backend/`):
+
+| Command | What it does |
+| --- | --- |
+| `npm run db:reset` | Delete the local embedded database and uploads; the next start re-creates and re-seeds them |
+| `npm run migrate` | Apply migrations (also runs on every start) |
+| `npm run seed` | Seed an empty database with demo data |
+| `npm run openapi` | Regenerate `docs/openapi.json` from the routes |
+
+To use your own PostgreSQL, set `DATABASE_URL` in `backend/.env` (see `backend/.env.example`).
+
+## What's real and what's simulated in development
+
+| Area | Development | Production |
+| --- | --- | --- |
+| Sign-in codes | Shown on screen and in the server log | MSG91 SMS or email (required) |
+| Payments | Simulated checkout, labelled "no real money moves", confirmed through signed webhooks | Razorpay |
+| Maps and routing | Bengaluru locality list; distances and times labelled as estimates | Mapbox when configured |
+| SMS, email | Logged, recorded as "logged (dev)", never as "sent" | MSG91, Resend |
+| Documents | Private local folder, 5-minute signed links | Object storage recommended |
+
+## Tests
 
 ```bash
-cd backend
-npm install
-npm start
+cd backend && npm test                      # 66 API and service tests on throwaway PostgreSQL
+cd front-end/carpool && npm test            # frontend unit tests
+cd front-end/carpool && npm run typecheck   # TypeScript
+cd front-end/carpool && npx playwright test # 6 browser journeys in Chrome on a fresh database
 ```
 
-The backend runs on:
+Details in `docs/testing.md`.
 
-```bash
-http://localhost:4000
-```
+## Deploy
 
-### 2) Start the frontend
+- **Render:** `render.yaml` creates a web service and a PostgreSQL database. As committed it is a clearly labelled demo deployment. See `docs/deployment.md` for switching to real providers.
+- **Docker:** `docker compose up --build` runs the app with its own PostgreSQL on http://localhost:4000.
 
-```bash
-cd front-end/carpool
-npm install
-npm run dev -- --host 0.0.0.0
-```
+Before a real pilot, work through the checklist in `docs/security.md`. That includes legal review of the cost-sharing caps, terms and privacy policy. Green Way does not claim regulatory compliance, insurance or background checks.
 
-The frontend runs on:
+## Contact
 
-```bash
-http://localhost:5173
-```
-
-## Deploy on Render
-
-The repository includes a Render Blueprint at `render.yaml`. Create a MongoDB Atlas database first, then create a new Blueprint deployment from this GitHub repository. Add these environment variables when Render prompts:
-
-- `MONGO_URI`: your MongoDB Atlas connection string, including the database name
-- `AUTH_SECRET`: a long random secret used to sign login tokens
-
-In MongoDB Atlas, create a database user and allow network access from Render (Atlas network access can be restricted further after deployment). Do not commit either secret to the repository. Render builds the Vite frontend and serves it from the Express service; `/health` checks both the server and database connection.
-
-The hosted app is available at the Render service URL once the deployment and health check succeed. Signup, login, ride offers, and ride searches all use the same hosted database.
-
-## Local Development
-
-For local backend development, MongoDB must be running at `mongodb://127.0.0.1:27017/user`. Start the backend and Vite frontend in separate terminals using the commands above.
-
-## GitHub
-
-Repository:
-
-https://github.com/harshitha7104/corporate-carpool
-
-## License
-
-This project is for educational/demo use.
-
-## Hosted on claude.ai (no server needed)
-
-`npm --prefix front-end/carpool run build:hosted` builds a version of the same frontend that runs as a claude.ai artifact. Instead of the Express API it uses the artifact's built-in shared database (`src/api/hosted.js`), so it needs no MongoDB or Render account. Each person's login is tied to their claude.ai account, and people need at least Contributor access on the artifact to sign up, offer, or book rides.
-
-## Demo rides
-
-`backend/demoData.js` holds 18 sample rides on Bangalore office-commute routes, with prices per seat, driver ratings and weekday departure times in India time. When the ride board is empty, the backend adds them automatically in development, and on Render because `render.yaml` sets `SEED_DEMO=true` (remove that to start with an empty board). Demo rides show a "Demo" tag and can be booked like real ones.
+harshitha71004@gmail.com · +91 88674 76254

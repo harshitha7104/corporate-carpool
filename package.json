@@ -1,0 +1,13 @@
+{
+  "name": "green-way",
+  "private": true,
+  "description": "Green Way carpooling: one-command scripts for the backend and frontend",
+  "scripts": {
+    "setup": "npm --prefix backend install && npm --prefix front-end/carpool install",
+    "build": "npm --prefix front-end/carpool run build",
+    "start": "npm run build && npm --prefix backend start",
+    "dev:api": "npm --prefix backend run dev",
+    "dev:web": "npm --prefix front-end/carpool run dev",
+    "test": "npm --prefix backend test && npm --prefix front-end/carpool test && npm --prefix front-end/carpool run typecheck"
+  }
+}

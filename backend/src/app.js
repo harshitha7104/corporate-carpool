@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import compression from "compression";
 import express from "express";
 import { BACKEND_ROOT, config } from "./config.js";
 import { db } from "./db/index.js";
@@ -12,6 +13,8 @@ export const createApp = () => {
   app.disable("x-powered-by");
   app.use(requestId);
   app.use(securityHeaders);
+  // gzip JSON and static files; WebSocket upgrades are unaffected.
+  app.use(compression());
 
   // Liveness: the process is up. Readiness: it can reach the database.
   app.get("/health", (req, res) => res.json({ status: "ok" }));
@@ -34,8 +37,14 @@ export const createApp = () => {
   // Serve the built frontend when present (single-service deployment).
   const dist = path.resolve(BACKEND_ROOT, "../front-end/carpool/dist");
   if (fs.existsSync(path.join(dist, "index.html"))) {
+    // Hashed build files never change, so browsers may keep them for a year.
+    app.use("/assets", express.static(path.join(dist, "assets"), { immutable: true, maxAge: "365d", index: false }));
     app.use(express.static(dist, { index: false, maxAge: config.isProduction ? "1h" : 0 }));
-    app.get(/^(?!\/api\/).*/, (req, res) => res.sendFile(path.join(dist, "index.html")));
+    // The page itself is always revalidated so a new release shows immediately.
+    app.get(/^(?!\/api\/).*/, (req, res) => {
+      res.set("Cache-Control", "no-cache");
+      res.sendFile(path.join(dist, "index.html"));
+    });
   }
 
   app.use(errorHandler);

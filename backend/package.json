@@ -11,12 +11,14 @@
     "seed": "node scripts/seed.js",
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
     "lint": "node scripts/lint.js",
-    "db:reset": "node scripts/resetDevDb.js"
+    "db:reset": "node scripts/resetDevDb.js",
+    "openapi": "node scripts/openapi.js"
   },
   "engines": {
     "node": ">=22.12"
   },
   "dependencies": {
+    "compression": "^1.8.2",
     "express": "^5.1.0",
     "pg": "^8.16.0",
     "ws": "^8.18.2",

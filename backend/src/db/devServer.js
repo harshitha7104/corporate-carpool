@@ -33,7 +33,25 @@ export const startDevDatabase = async ({ name = "dev", persistent = true } = {})
     onError: (msg) => logger.debug("embedded postgres", { msg: String(msg) }),
   });
   if (fresh || !persistent) await server.initialise();
-  await server.start();
+  try {
+    await server.start();
+  } catch (err) {
+    // A previous run killed without a clean shutdown leaves postmaster.pid
+    // behind. If no server holds it, remove it and try once more.
+    const pidFile = path.join(dataDir, "postmaster.pid");
+    const pid = fs.existsSync(pidFile) ? Number(fs.readFileSync(pidFile, "utf8").split("\n")[0]) : 0;
+    let alive = false;
+    try {
+      if (pid) process.kill(pid, 0);
+      alive = Boolean(pid);
+    } catch {
+      alive = false;
+    }
+    if (!pid || alive) throw err instanceof Error ? err : new Error(`Embedded PostgreSQL failed to start: ${String(err)}`);
+    logger.warn("Removing a stale PostgreSQL lock file from an unclean shutdown", { pid });
+    fs.rmSync(pidFile, { force: true });
+    await server.start();
+  }
   if (fresh || !persistent) {
     try {
       await server.createDatabase("greenway");

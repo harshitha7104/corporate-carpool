@@ -45,6 +45,9 @@ const schema = z.object({
 
   STORAGE_DIR: z.string().optional(),
   SEED_DEMO: bool,
+  // A deliberate, labelled demo deployment: allows on-screen sign-in codes and
+  // simulated payments in production. Never set it for a real pilot.
+  DEMO_MODE: bool,
   WORKER_ENABLED: z.enum(["true", "false"]).default("true"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
@@ -64,11 +67,11 @@ if (isProduction) {
   if (!env.SESSION_SECRET) missing.push("SESSION_SECRET");
   if (!env.PUBLIC_APP_URL) missing.push("PUBLIC_APP_URL");
   if (missing.length) throw new Error(`Missing required production settings: ${missing.join(", ")}`);
-  if (env.OTP_PROVIDER === "dev") {
-    throw new Error("OTP_PROVIDER=dev shows codes on screen and cannot be used in production. Configure msg91.");
+  if (env.OTP_PROVIDER === "dev" && !env.DEMO_MODE) {
+    throw new Error("OTP_PROVIDER=dev shows codes on screen and cannot be used in production. Configure msg91, or set DEMO_MODE=true for a labelled demo deployment.");
   }
-  if (env.PAYMENTS_PROVIDER === "simulated" && process.env.ALLOW_SIMULATED_PAYMENTS !== "true") {
-    throw new Error("Simulated payments are disabled in production. Configure razorpay, or set ALLOW_SIMULATED_PAYMENTS=true for a labelled demo deployment.");
+  if (env.PAYMENTS_PROVIDER === "simulated" && !env.DEMO_MODE) {
+    throw new Error("Simulated payments are disabled in production. Configure razorpay, or set DEMO_MODE=true for a labelled demo deployment.");
   }
 }
 if (env.PAYMENTS_PROVIDER === "razorpay" && !(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET)) {
@@ -109,6 +112,7 @@ export const config = {
   },
   storageDir: env.STORAGE_DIR || path.join(BACKEND_ROOT, ".data", "uploads"),
   seedDemo: env.SEED_DEMO,
+  demoMode: env.DEMO_MODE,
   workerEnabled: env.WORKER_ENABLED === "true",
   logLevel: env.LOG_LEVEL,
   timezone: "Asia/Kolkata",

@@ -14,7 +14,8 @@ const main = async () => {
     if (config.isProduction) throw new Error("DATABASE_URL is required in production.");
     logger.info("No DATABASE_URL set; starting the embedded development PostgreSQL (first run downloads it).");
     const { startDevDatabase } = await import("./db/devServer.js");
-    devDb = await startDevDatabase({ name: "dev" });
+    // DEV_DB_NAME / DEV_DB_FRESH let browser tests use their own throwaway database.
+    devDb = await startDevDatabase({ name: process.env.DEV_DB_NAME || "dev", persistent: process.env.DEV_DB_FRESH !== "true" });
     url = devDb.url;
   }
   initPool(url);
@@ -44,6 +45,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  logger.error("Failed to start", { error: err.message, stack: err.stack });
+  logger.error("Failed to start", { error: err instanceof Error ? err.message : String(err), stack: err?.stack });
   process.exit(1);
 });

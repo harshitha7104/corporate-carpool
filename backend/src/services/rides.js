@@ -9,7 +9,7 @@ import { maps } from "../providers/maps/index.js";
 import { evaluateFit, scoreFit } from "./matching.js";
 import { suggestedContribution } from "./pricing.js";
 import { getSetting, getSettings } from "./settings.js";
-import { isBlockedEitherWay, isVerifiedDriver, publicProfile } from "./users.js";
+import { isBlockedEitherWay, isVerifiedDriver, publicProfile, publicProfiles } from "./users.js";
 import { getOwnVehicle } from "./vehicles.js";
 import { vehicleVerificationStatus } from "./verification.js";
 
@@ -229,9 +229,28 @@ const rideRow = (client, where, params) =>
     params
   );
 
-export const shapeRide = async (r, { viewer, stops, client } = {}) => {
+// Batch the per-ride lookups (driver card, vehicle verification) for lists.
+export const prefetchForRides = async (rows, client = db) => {
+  const profiles = await publicProfiles(rows.map((r) => r.driver_id), client);
+  const vehicleIds = [...new Set(rows.map((r) => r.vehicle_id))];
+  const vv = vehicleIds.length
+    ? await client.many(
+        `SELECT DISTINCT ON (vehicle_id) vehicle_id, status, insurance_expiry FROM vehicle_verifications
+          WHERE vehicle_id = ANY($1) ORDER BY vehicle_id, submitted_at DESC`,
+        [vehicleIds]
+      )
+    : [];
+  const vehicleVerified = new Map(
+    vv.map((v) => [v.vehicle_id, v.status === "verified" && !(v.insurance_expiry && new Date(v.insurance_expiry) < new Date())])
+  );
+  return { profiles, vehicleVerified };
+};
+
+export const shapeRide = async (r, { viewer, stops, client, prefetched } = {}) => {
   const isDriver = viewer?.id === r.driver_id;
-  const vehicleVerification = await vehicleVerificationStatus(r.vehicle_id, client);
+  const vehicleVerified = prefetched
+    ? Boolean(prefetched.vehicleVerified.get(r.vehicle_id))
+    : (await vehicleVerificationStatus(r.vehicle_id, client)).status === "verified";
   return {
     id: r.id,
     status: r.status,
@@ -266,9 +285,9 @@ export const shapeRide = async (r, { viewer, stops, client } = {}) => {
       // The full plate is shown to the driver and to booked passengers only.
       plateNumber: isDriver || viewer?.bookedOnRide ? r.plate_number : `${r.plate_number.slice(0, 4)}••${r.plate_number.slice(-2)}`,
       fuelType: r.fuel_type,
-      verified: vehicleVerification.status === "verified",
+      verified: vehicleVerified,
     },
-    driver: await publicProfile(r.driver_id, client || db),
+    driver: prefetched?.profiles.get(r.driver_id) || (await publicProfile(r.driver_id, client || db)),
     isDriver,
     startedAt: r.started_at,
     completedAt: r.completed_at,
@@ -318,7 +337,8 @@ export const listDriverRides = async (user, query) => {
       WHERE r.driver_id = $1 AND ${where} ORDER BY ${order} LIMIT $2 OFFSET $3`,
     [user.id, q.limit, q.offset]
   );
-  return Promise.all(rows.map(async (r) => ({ ...(await shapeRide(r, { viewer: user })), pendingRequests: r.pending_requests })));
+  const prefetched = await prefetchForRides(rows);
+  return Promise.all(rows.map(async (r) => ({ ...(await shapeRide(r, { viewer: user, prefetched })), pendingRequests: r.pending_requests })));
 };
 
 // ---- Search -------------------------------------------------------------------------
@@ -383,9 +403,10 @@ export const searchRides = async (viewer, query) => {
     results.push({ r, fit, score, parts, pickupAt, dropoffAt });
   }
 
+  const prefetched = await prefetchForRides(results.map((x) => x.r));
   let shaped = await Promise.all(
     results.map(async ({ r, fit, score, parts, pickupAt, dropoffAt }) => ({
-      ...(await shapeRide(r, { viewer })),
+      ...(await shapeRide(r, { viewer, prefetched })),
       match: {
         score,
         parts,

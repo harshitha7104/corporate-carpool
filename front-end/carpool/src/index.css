@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Green Way tokens. Layout: app shell with a left rail on desktop and a bottom
+   bar on phones; content in a centred column. RGB triplets so Tailwind can
+   apply opacity. */
+:root {
+  --canvas: 246 248 246;
+  --surface: 255 255 255;
+  --sunken: 237 242 239;
+  --ink: 17 33 27;
+  --muted: 86 104 96;
+  --line: 220 228 223;
+  --brand: 11 107 76;
+  --brand-strong: 7 82 57;
+  --brand-soft: 222 240 231;
+  --brand-ink: 255 255 255;
+  --signal: 214 132 28;
+  --signal-soft: 252 238 216;
+  --good: 22 125 74;
+  --good-soft: 220 242 229;
+  --warn: 166 101 6;
+  --warn-soft: 252 240 212;
+  --bad: 186 48 36;
+  --bad-soft: 251 227 223;
+  --info: 35 96 164;
+  --info-soft: 224 235 250;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: 11 19 16;
+    --surface: 18 29 25;
+    --sunken: 25 39 33;
+    --ink: 229 238 233;
+    --muted: 150 169 160;
+    --line: 40 57 50;
+    --brand: 56 184 133;
+    --brand-strong: 92 206 158;
+    --brand-soft: 21 55 42;
+    --brand-ink: 5 22 15;
+    --signal: 240 171 74;
+    --signal-soft: 61 44 18;
+    --good: 76 194 126;
+    --good-soft: 20 50 34;
+    --warn: 232 172 64;
+    --warn-soft: 56 42 14;
+    --bad: 242 116 100;
+    --bad-soft: 62 26 22;
+    --info: 118 166 232;
+    --info-soft: 22 37 60;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --canvas: 11 19 16;
+  --surface: 18 29 25;
+  --sunken: 25 39 33;
+  --ink: 229 238 233;
+  --muted: 150 169 160;
+  --line: 40 57 50;
+  --brand: 56 184 133;
+  --brand-strong: 92 206 158;
+  --brand-soft: 21 55 42;
+  --brand-ink: 5 22 15;
+  --signal: 240 171 74;
+  --signal-soft: 61 44 18;
+  --good: 76 194 126;
+  --good-soft: 20 50 34;
+  --warn: 232 172 64;
+  --warn-soft: 56 42 14;
+  --bad: 242 116 100;
+  --bad-soft: 62 26 22;
+  --info: 118 166 232;
+  --info-soft: 22 37 60;
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-canvas;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 h-11 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 select-none whitespace-nowrap;
+  }
+  .btn-sm {
+    @apply h-9 px-3 text-sm rounded-lg;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-brand-ink hover:bg-brand-strong;
+  }
+  .btn-secondary {
+    @apply btn bg-surface text-ink border border-line hover:bg-sunken;
+  }
+  .btn-ghost {
+    @apply btn text-ink hover:bg-sunken;
+  }
+  .btn-danger {
+    @apply btn bg-bad text-white hover:opacity-90;
+  }
+  .input {
+    @apply block w-full h-11 rounded-xl border border-line bg-surface px-3.5 text-[15px] text-ink placeholder:text-muted/80 focus:border-brand focus:ring-2 focus:ring-brand/25 focus:outline-none disabled:bg-sunken;
+  }
+  textarea.input {
+    @apply h-auto py-2.5;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink mb-1.5;
+  }
+  .hint {
+    @apply mt-1 text-xs text-muted;
+  }
+  .error-text {
+    @apply mt-1 text-xs font-medium text-bad;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+  }
+}
+
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+aside::-webkit-scrollbar-thumb {
+  background: rgb(var(--line));
+  border-radius: 3px;
+}
+aside {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background: rgb(var(--sunken));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

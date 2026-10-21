@@ -48,7 +48,29 @@ export const securityHeaders = (req, res, next) => {
   res.set("X-Frame-Options", "DENY");
   res.set("Referrer-Policy", "strict-origin-when-cross-origin");
   res.set("Permissions-Policy", "geolocation=(self), camera=(), microphone=()");
-  if (config.isProduction) res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  if (config.isProduction) {
+    res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    // The SPA only loads its own scripts, Google Fonts, map tiles and Razorpay Checkout.
+    if (!req.path.startsWith("/api/")) {
+      const tiles = process.env.CSP_IMG_EXTRA || "https://*.tile.openstreetmap.org";
+      res.set(
+        "Content-Security-Policy",
+        [
+          "default-src 'self'",
+          "script-src 'self' https://checkout.razorpay.com",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' https://fonts.gstatic.com",
+          `img-src 'self' data: blob: ${tiles}`,
+          "connect-src 'self' ws: wss: https://lumberjack.razorpay.com",
+          "frame-src https://api.razorpay.com https://checkout.razorpay.com",
+          "frame-ancestors 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "object-src 'none'",
+        ].join("; ")
+      );
+    }
+  }
   next();
 };
 

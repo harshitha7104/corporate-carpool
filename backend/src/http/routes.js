@@ -33,10 +33,12 @@ export const apiRouter = () => {
     const s = await getSettings();
     res.json({
       environment: config.env,
+      demoMode: config.demoMode,
       serviceArea: s.service_area,
       features: s.features,
       safety: { emergencyNumber: s.safety.emergency_number, emergencyLabel: s.safety.emergency_label },
       pricing: s.pricing,
+      fees: s.fees,
       cancellation: s.cancellation,
       booking: s.booking,
       matching: s.matching,
@@ -67,6 +69,9 @@ export const apiRouter = () => {
     res.set("Set-Cookie", sessionCookie(result.token, config.sessionDays * 86400));
     res.json({ isNew: result.isNew });
   });
+
+  // Always 200: lets public pages ask "who am I?" without a 401 in the console.
+  r.get("/auth/session", async (req, res) => res.json({ user: req.user ? await users.getMe(req.user) : null }));
 
   r.get("/auth/me", requireUser, async (req, res) => res.json(await users.getMe(req.user)));
 

@@ -19,3 +19,7 @@ Thumbs.db
 # Local built-in database files
 backend/.data/
 front-end/carpool/dist-hosted/
+
+# Playwright
+front-end/carpool/test-results/
+front-end/carpool/playwright-report/

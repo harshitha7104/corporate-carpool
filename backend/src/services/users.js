@@ -119,33 +119,57 @@ export const updatePreferences = async (user, body) => {
 };
 
 // Public card for another person: no phone, no email, no gender.
-export const publicProfile = async (userId, client = db) => {
-  const row = await client.one(
+// Public cards for many people in one query (no phone, email or gender).
+// Search and lists use this so results don't cost a round trip each.
+export const publicProfiles = async (userIds, client = db) => {
+  const ids = [...new Set(userIds.filter(Boolean))];
+  if (!ids.length) return new Map();
+  const rows = await client.many(
     `SELECT u.id, u.status, u.is_demo, u.created_at, p.full_name, p.bio,
-            (SELECT round(avg(rating)::numeric, 1)::float FROM reviews WHERE reviewee_id = u.id) AS rating,
-            (SELECT count(*) FROM reviews WHERE reviewee_id = u.id) AS review_count,
+            rv.rating, coalesce(rv.review_count, 0) AS review_count,
             (SELECT count(*) FROM rides WHERE driver_id = u.id AND status = 'completed') AS rides_driven,
-            (SELECT count(*) FROM bookings WHERE passenger_id = u.id AND status = 'COMPLETED') AS rides_taken
-       FROM users u LEFT JOIN user_profiles p ON p.user_id = u.id WHERE u.id = $1`,
-    [userId]
+            (SELECT count(*) FROM bookings WHERE passenger_id = u.id AND status = 'COMPLETED') AS rides_taken,
+            (SELECT v.status = 'verified' AND (v.expires_at IS NULL OR v.expires_at > now()) FROM identity_verifications v
+              WHERE v.user_id = u.id AND v.kind = 'government_id' ORDER BY v.submitted_at DESC LIMIT 1) AS id_verified,
+            (SELECT v.status = 'verified' AND (v.expires_at IS NULL OR v.expires_at > now()) FROM identity_verifications v
+              WHERE v.user_id = u.id AND v.kind = 'driving_license' ORDER BY v.submitted_at DESC LIMIT 1) AS licence_verified
+       FROM users u
+       LEFT JOIN user_profiles p ON p.user_id = u.id
+       LEFT JOIN (SELECT reviewee_id, round(avg(rating)::numeric, 1)::float AS rating, count(*) AS review_count
+                    FROM reviews WHERE reviewee_id = ANY($1) GROUP BY reviewee_id) rv ON rv.reviewee_id = u.id
+      WHERE u.id = ANY($1)`,
+    [ids]
   );
-  if (!row || row.status === "deleted") throw notFound("Person");
-  const v = await verificationSummary(userId, client);
-  const first = (row.full_name || "Green Way member").split(" ")[0];
-  return {
-    id: row.id,
-    displayName: row.full_name ? `${first} ${row.full_name.split(" ").slice(1).map((s) => `${s[0]}.`).join(" ")}`.trim() : "Green Way member",
-    initials: (row.full_name || "G W").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase(),
-    bio: row.bio,
-    memberSince: row.created_at,
-    isDemo: row.is_demo,
-    idVerified: v.government_id.status === "verified",
-    licenceVerified: v.driving_license.status === "verified",
-    rating: row.review_count > 0 ? row.rating : null,
-    reviewCount: row.review_count,
-    ridesDriven: row.rides_driven,
-    ridesTaken: row.rides_taken,
-  };
+  return new Map(
+    rows
+      .filter((row) => row.status !== "deleted")
+      .map((row) => {
+        const first = (row.full_name || "Green Way member").split(" ")[0];
+        return [
+          row.id,
+          {
+            id: row.id,
+            displayName: row.full_name ? `${first} ${row.full_name.split(" ").slice(1).map((s) => `${s[0]}.`).join(" ")}`.trim() : "Green Way member",
+            initials: (row.full_name || "G W").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase(),
+            bio: row.bio,
+            memberSince: row.created_at,
+            isDemo: row.is_demo,
+            idVerified: Boolean(row.id_verified),
+            licenceVerified: Boolean(row.licence_verified),
+            rating: row.review_count > 0 ? row.rating : null,
+            reviewCount: row.review_count,
+            ridesDriven: row.rides_driven,
+            ridesTaken: row.rides_taken,
+          },
+        ];
+      })
+  );
+};
+
+export const publicProfile = async (userId, client = db) => {
+  const p = (await publicProfiles([userId], client)).get(userId);
+  if (!p) throw notFound("Person");
+  return p;
 };
 
 // ---- Saved places ----------------------------------------------------------
