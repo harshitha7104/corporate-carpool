@@ -22,8 +22,10 @@ const signIn = async (page: Page, phone: string) => {
   await page.getByLabel("Mobile number").fill(phone);
   await page.getByRole("button", { name: "Send code" }).click();
   // The API enforces a 30-second gap between codes to one number; wait it out like a person would.
+  // isVisible() doesn't wait, so wait for whichever answer arrives first.
   const wait = page.getByText("Please wait 30 seconds");
-  if (await wait.isVisible({ timeout: 2500 }).catch(() => false)) {
+  await expect(page.getByText(/Your code is|Please wait 30 seconds/).first()).toBeVisible();
+  if (await wait.isVisible()) {
     await page.waitForTimeout(31_000);
     await page.getByRole("button", { name: "Send code" }).click();
   }
@@ -139,13 +141,13 @@ test("new driver verifies documents, an admin approves, and the driver publishes
   for (const tab of ["ID and licences", "Vehicles"]) {
     await admin.goto("/admin/verifications");
     await admin.getByRole("tab", { name: tab }).click();
-    for (let guard = 0; guard < 5; guard++) {
-      const card = admin.locator(".card").filter({ hasText: "Kiran Shetty" }).first();
-      if (!(await card.isVisible().catch(() => false))) break;
-      await card.getByRole("button", { name: "Approve" }).click();
+    const cards = admin.locator(".card").filter({ hasText: "Kiran Shetty" });
+    // Wait for the queue to load before counting what's in it.
+    await expect(cards.first()).toBeVisible();
+    for (let left = await cards.count(); left > 0; left--) {
+      await cards.first().getByRole("button", { name: "Approve" }).click();
       await admin.getByRole("dialog").getByRole("button", { name: "Approve" }).click();
-      await expect(admin.getByText("Decision recorded").first()).toBeVisible();
-      await admin.waitForTimeout(500);
+      await expect(cards).toHaveCount(left - 1);
     }
   }
   await adminCtx.close();

@@ -6,7 +6,7 @@ All three suites run without installing PostgreSQL: each starts its own throwawa
 | --- | --- | --- |
 | Backend API and services | `cd backend && npm test` | 66 tests across auth, bookings, rides, verification, payments, commutes, safety, support, admin, and the full journey |
 | Frontend unit | `cd front-end/carpool && npm test` | Formatting (₹ from paise, IST time maths, plates) and the sign-in form's validation and error handling |
-| Browser end-to-end | `cd front-end/carpool && npx playwright test` | Six journeys in real Chrome against a real backend and database |
+| Browser end-to-end | `cd front-end/carpool && npx playwright test` | Six journeys in real Chrome against the built app served by a real backend and database, as in production |
 | Type check | `cd front-end/carpool && npm run typecheck` | TypeScript strict mode |
 | Backend syntax | `cd backend && npm run lint` | Every module parses |
 
