@@ -52,7 +52,8 @@ const schema = z.object({
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
-const parsed = schema.safeParse(process.env);
+// Render sets RENDER_EXTERNAL_URL automatically; use it when PUBLIC_APP_URL is not given.
+const parsed = schema.safeParse({ ...process.env, PUBLIC_APP_URL: process.env.PUBLIC_APP_URL || process.env.RENDER_EXTERNAL_URL });
 if (!parsed.success) {
   const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
   throw new Error(`Invalid configuration: ${issues}`);

@@ -2,7 +2,8 @@
 # As committed, this is a labelled DEMO deployment (DEMO_MODE): sign-in codes
 # appear on screen and payments are simulated, so anyone could sign in as any
 # number. Before a real pilot, set OTP_PROVIDER=msg91, PAYMENTS_PROVIDER=razorpay
-# with their secrets, and remove DEMO_MODE and SEED_DEMO.
+# with their secrets, and remove DEMO_MODE and SEED_DEMO. The site address
+# comes from Render (RENDER_EXTERNAL_URL); set PUBLIC_APP_URL for a custom domain.
 databases:
   - name: greenway-db
     plan: free
@@ -26,8 +27,6 @@ services:
           property: connectionString
       - key: SESSION_SECRET
         generateValue: true
-      - key: PUBLIC_APP_URL
-        sync: false
       - key: DEMO_MODE
         value: "true"
       - key: SEED_DEMO
