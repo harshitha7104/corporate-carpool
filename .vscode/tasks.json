@@ -1,0 +1,62 @@
+{
+  // Terminal > Run Task... (or Ctrl+Shift+B for the default build task)
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Green Way: install",
+      "type": "shell",
+      "command": "npm run setup",
+      "problemMatcher": []
+    },
+    {
+      "label": "Green Way: build web",
+      "type": "shell",
+      "command": "npm run build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Green Way: start app (localhost:4000)",
+      "detail": "Builds the web app, then starts the API that serves it",
+      "type": "shell",
+      "command": "npm start",
+      "isBackground": true,
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": {
+        "pattern": { "regexp": "^x^$" },
+        "background": { "activesBegin": "^", "beginsPattern": "vite v|building", "endsPattern": "listening on http" }
+      }
+    },
+    {
+      "label": "Green Way: API (dev, auto-reload)",
+      "type": "shell",
+      "command": "npm run dev:api",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^x^$" },
+        "background": { "activesBegin": "^", "beginsPattern": "embedded development PostgreSQL|node --watch", "endsPattern": "listening on http" }
+      }
+    },
+    {
+      "label": "Green Way: web (dev, hot reload)",
+      "type": "shell",
+      "command": "npm run dev:web",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^x^$" },
+        "background": { "activesBegin": "^", "beginsPattern": "vite", "endsPattern": "Local:" }
+      }
+    },
+    {
+      "label": "Green Way: dev (API + web)",
+      "dependsOn": ["Green Way: API (dev, auto-reload)", "Green Way: web (dev, hot reload)"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Green Way: run all tests",
+      "type": "shell",
+      "command": "npm test && npm --prefix front-end/carpool exec playwright test",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

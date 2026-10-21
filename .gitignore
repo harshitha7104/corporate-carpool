@@ -13,7 +13,9 @@ npm-debug.log*
 # OS/editor files
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea/
 
 # Local built-in database files

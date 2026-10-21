@@ -1,0 +1,26 @@
+{
+  // Run and Debug panel (Ctrl+Shift+D), or press F5.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Green Way: run app",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/server.js",
+      "preLaunchTask": "Green Way: build web",
+      "console": "integratedTerminal",
+      "serverReadyAction": { "pattern": "listening on (http://localhost:\\d+)", "uriFormat": "%s", "action": "openExternally" },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Green Way: debug API only",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/server.js",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
