@@ -44,6 +44,12 @@ const main = async () => {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 };
 
+// A stray rejection (for example a dropped database connection) is logged
+// rather than taking the whole server down; /ready reports the database state.
+process.on("unhandledRejection", (err) => {
+  logger.error("Unhandled rejection", { error: err instanceof Error ? err.message : String(err) });
+});
+
 main().catch((err) => {
   logger.error("Failed to start", { error: err instanceof Error ? err.message : String(err), stack: err?.stack });
   process.exit(1);

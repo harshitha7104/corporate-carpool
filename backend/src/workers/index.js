@@ -21,8 +21,17 @@ export const TASKS = [
 ];
 
 export const runTask = async (task) => {
-  const client = await getPool().connect();
+  let client;
+  try {
+    client = await getPool().connect();
+  } catch (err) {
+    // Database unreachable (e.g. the machine slept): skip this run, retry next tick.
+    logger.warn("Worker task skipped: database unavailable", { task: task.name, error: err.message });
+    recordRun(task.name, { ok: false, error: `database unavailable: ${err.message}` });
+    return { ok: false, error: err.message };
+  }
   let locked = false;
+  let broken = null;
   try {
     locked = (await client.query("SELECT pg_try_advisory_lock($1) AS ok", [task.lockId])).rows[0].ok;
     if (!locked) return { skipped: true };
@@ -34,14 +43,16 @@ export const runTask = async (task) => {
   } catch (err) {
     logger.error("Worker task failed", { task: task.name, error: err.message });
     recordRun(task.name, { ok: false, error: err.message });
+    if (/terminat|ECONNRESET|ECONNREFUSED|timeout/i.test(err.message)) broken = err;
     await client.query(
       `INSERT INTO jobs (type, status, attempts, last_error, payload) VALUES ($1, 'failed', 1, $2, '{}')`,
       [task.name, err.message.slice(0, 500)]
     ).catch(() => {});
     return { ok: false, error: err.message };
   } finally {
-    if (locked) await client.query("SELECT pg_advisory_unlock($1)", [task.lockId]).catch(() => {});
-    client.release();
+    if (locked && !broken) await client.query("SELECT pg_advisory_unlock($1)", [task.lockId]).catch(() => {});
+    // Passing the error makes the pool discard a dead connection instead of reusing it.
+    client.release(broken || undefined);
   }
 };
 
